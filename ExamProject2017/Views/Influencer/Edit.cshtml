@@ -1,0 +1,149 @@
+﻿@model ExamProject2017.Models.InfluencerViewModels.EditViewModel
+@{
+    ViewData["Title"] = "Edit profile";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="business-edit-container">
+                <h1>Edit your influencer information</h1>
+                @if (Model.ProfileIsCreated)
+                {
+                    <h5>Import Your Statistics</h5>
+                    <p></p>
+                    <a href="http://www.facebook.com/dialog/oauth?client_id=326842804433660&redirect_uri=http://localhost:50862/influencer/StatisticsInstagramAccounts&scope=instagram_basic+instagram_manage_insights+read_audience_network_insights+read_insights+pages_show_list">
+                        Press this link to import your Instagram Bussiness data
+                    </a>
+                    <br />
+                    <p>If you dont have a Instagram Bussiness account yet or dont <br /> know what it is, you can check this link to learn more <a href="https://business.instagram.com/getting-started">learn more</a></p>
+                    <br />
+                    <p>
+                        <a href="@Url.Action("Test", "Influencer")">Press this link to import your Youtube data</a>
+                    </p>
+                }
+
+                <form asp-controller="Influencer" asp-action="Edit">
+                    <input type="hidden" asp-for="@Model.ProfileIsCreated" />
+                    <h5>Personal information</h5>
+                    <div class="form-row">
+
+                        <div class="form-group col-md-4">
+                            <label asp-for="Firstname"></label>
+                            <input asp-for="Firstname" type="text" class="form-control" placeholder="Firstname">
+                            <span asp-validation-for="Firstname" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="Lastname"></label>
+                            <input asp-for="Lastname" type="text" class="form-control" placeholder="Lastname">
+                            <span asp-validation-for="Lastname" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="Email"></label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="Email">
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="Phone"></label>
+                            <input asp-for="Phone" type="number" class="form-control" placeholder="Phone">
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="BankAccount"></label>
+                            <input asp-for="BankAccount" type="number" class="form-control" placeholder="Bankaccount number">
+                            <span asp-validation-for="BankAccount" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="Address"></label>
+                            <input asp-for="Address" type="text" class="form-control" placeholder="CEO, Employee etc.">
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="CVR"></label>
+                            <input asp-for="CVR" type="text" class="form-control" placeholder="CVR number">
+                            <span asp-validation-for="CVR" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="CPR"></label>
+                            <input asp-for="CPR" type="text" class="form-control" placeholder="CPR number (if any)">
+                            <span asp-validation-for="CPR" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="AgencyName"></label>
+                            <input asp-for="AgencyName" type="text" class="form-control" placeholder="Agency name (if any)">
+                            <span asp-validation-for="AgencyName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="form-row">
+                        <div class="col-md-12">
+                            <h5>Influencer information</h5>
+
+                            <p><b>Categories:</b></p>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input asp-for="@Model.Entertainment" class="form-check-input" type="checkbox" >
+                                    Entertainment
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="@Model.Gaming">
+                                    Gaming
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="@Model.Personal">
+                                    Personal
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="@Model.LifeStyle">
+                                    Lifestyle
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="@Model.Fashion">
+                                    Fashion
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="@Model.Interests">
+                                    Interests
+                                </label>
+                            </div>
+
+                            <br />
+                            <br />
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label asp-for="WorkDescription"></label>
+                                    <textarea asp-for="WorkDescription" type="text" class="form-control" placeholder="Describe your work" rows="5"></textarea>
+                                    <span asp-validation-for="WorkDescription" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Characteristic"></label>
+                                    <textarea asp-for="Characteristic" type="text" class="form-control" placeholder="Describe yourself" rows="5"></textarea>
+                                    <span asp-validation-for="Characteristic" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label asp-for="PriceFrom"></label>
+                                    <input asp-for="PriceFrom" type="text" class="form-control" placeholder="Starting price">
+                                    <span asp-validation-for="PriceFrom" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save information</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

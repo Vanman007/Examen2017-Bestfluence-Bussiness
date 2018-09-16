@@ -1,0 +1,268 @@
+﻿<div class="background-all">
+    <div class="navbar-allaround"></div>
+
+    <div class="container">
+        <button id="sign-in-or-out-button"
+                style="margin-left: 25px">
+            Sign In/Authorize
+        </button>
+        <button id="revoke-access-button"
+                style="display: none; margin-left: 25px">
+            Revoke access
+        </button>
+
+        <div id="auth-status" style="display: inline; padding-left: 25px"></div><hr>
+
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script async defer src="https://apis.google.com/js/api.js"
+            onload="this.onload=function(){};handleClientLoad()"
+            onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+
+    <script>
+
+        var GoogleAuth;
+
+        var SCOPE = 'https://www.googleapis.com/auth/yt-analytics.readonly';
+        function handleClientLoad() {
+            gapi.load('client:auth2', initClient);
+        }
+
+        function initClient() {
+            // Retrieve the discovery document for version 1 of YouTube Analytics API.
+            // In practice, your app can retrieve one or more discovery documents.
+            var discoveryUrl = 'https://www.googleapis.com/discovery/v1/apis/youtubeAnalytics/v1/rest';
+
+            // Initialize the gapi.client object, which app uses to make API requests.
+            // Get API key and client ID from API Console.
+            // 'scope' field specifies space-delimited list of access scopes.
+            gapi.client.init({
+                'apiKey': 'AIzaSyCLIwXsvSxlqCZBidp-XKPuxvQKX3KsRmo',
+                'discoveryDocs': [discoveryUrl],
+                'clientId': '81653426386-u2o7gn1hspfr9jg22hoko1j7pa3pnvsv.apps.googleusercontent.com',
+                'scope': SCOPE
+            }).then(function () {
+                GoogleAuth = gapi.auth2.getAuthInstance();
+
+                // Listen for sign-in state changes.
+                GoogleAuth.isSignedIn.listen(updateSigninStatus);
+
+                // Handle initial sign-in state. (Determine if user is already signed in.)
+                var user = GoogleAuth.currentUser.get();
+                setSigninStatus();
+
+                // Call handleAuthClick function when user clicks on
+                //      "Sign In/Authorize" button.
+                $('#sign-in-or-out-button').click(function () {
+                    handleAuthClick();
+                });
+                $('#revoke-access-button').click(function () {
+                    revokeAccess();
+                });
+            });
+        }
+
+        function handleAuthClick() {
+            if (GoogleAuth.isSignedIn.get()) {
+                // User is authorized and has clicked 'Sign out' button.
+                GoogleAuth.signOut();
+            } else {
+                // User is not signed in. Start Google auth flow.
+                GoogleAuth.signIn();
+            }
+        }
+
+        function revokeAccess() {
+            GoogleAuth.disconnect();
+        }
+
+        function setSigninStatus(isSignedIn) {
+            var user = GoogleAuth.currentUser.get();
+            var isAuthorized = user.hasGrantedScopes(SCOPE);
+            if (isAuthorized) {
+                $('#sign-in-or-out-button').html('Sign out');
+                $('#revoke-access-button').css('display', 'inline-block');
+                $('#auth-status').html('You are currently signed in and have granted ' +
+                    'access to this app.');
+
+                getViews();
+
+
+
+            } else {
+                $('#sign-in-or-out-button').html('Sign In/Authorize');
+                $('#revoke-access-button').css('display', 'none');
+                $('#auth-status').html('You have not authorized this app or you are ' +
+                    'signed out.');
+            }
+        }
+
+        function updateSigninStatus(isSignedIn) {
+            setSigninStatus();
+        }
+
+        function getLikes(callback) {
+            var request = gapi.client.request({
+                'method': 'GET',
+                'path': '/youtube/analytics/v1/reports',
+                'params': {
+                    'ids': 'channel==MINE', 'start-date': '2016-05-01', 'end-date': '2017-09-25', 'metrics': 'likes', 'dimensions': 'day'
+                }
+            });
+
+            // Execute the API request.
+            request.execute(function (response) {
+                console.log(response);
+                getGenderViewsPercentage();
+                likes = response.rows[1][1];
+                getComments();
+            });
+        }
+
+        function getComments() {
+            var request = gapi.client.request({
+                'method': 'GET',
+                'path': '/youtube/analytics/v1/reports',
+                'params': {
+                    'ids': 'channel==MINE', 'start-date': '2016-05-01', 'end-date': '2017-09-25', 'metrics': 'comments', 'dimensions': 'day'
+                }
+            });
+
+            // Execute the API request.
+            request.execute(function (response) {
+                console.log(response);
+                getGenderViewsPercentage()
+                comments = response.rows[1][1];
+            });
+        }
+
+        function getDislikes() {
+            var request = gapi.client.request({
+                'method': 'GET',
+                'path': '/youtube/analytics/v1/reports',
+                'params': {
+                    'ids': 'channel==MINE', 'start-date': '2016-05-01', 'end-date': '2017-09-25', 'metrics': 'dislikes', 'dimensions': 'day'
+                }
+            });
+            // Execute the API request.
+            request.execute(function (response) {
+                getGenderViewsPercentage();
+                dislikes = response.rows[1][1];
+
+
+            });
+        }
+
+
+        function getGenderViewsPercentage() {
+
+            var request = gapi.client.request({
+                'method': 'GET',
+                'path': '/youtube/analytics/v1/reports',
+                'params': { 'ids': 'channel==MINE', 'start-date': '2016-05-01', 'end-date': '2017-09-25', 'metrics': 'viewerPercentage', 'dimensions': 'gender' }
+            });
+            // Execute the API request.
+            request.execute(function (response) {
+
+
+                male = 5;
+                //response.rows[1][1]
+                //response.rows[0][1]
+                gender = 0;
+
+                saveData(gender, male, views, likes, comments, dislikes);
+                console.log("i did it");
+
+
+                $("#malePercent").html(response.rows[1][1] + "%")
+                $("#femalePercent").html(response.rows[0][1] + "%")
+
+            });
+
+        }
+
+
+
+
+        //function getChannel() {
+        //    gapi.client.youtube.channels.list({
+        //        'part': 'snippet,contentDetails,statistics',
+        //        'forUsername': 'OMrSuperJellyFish'
+        //    }).then(function (response) {
+        //        console.log(response);
+        //        var channel = response.result.items[0];
+        //        console.log(response + "Alt i channels")
+        //        //appendPre('Kanal id' + channel.id + '. ' +
+        //        //    'Kanal title \'' + channel.snippet.title + ', ' +
+        //        //    'Kanal views ' + channel.statistics.viewCount + ' views.'
+        //        //);
+
+        //    });
+
+
+        //}
+
+
+        function getViews() {
+            var request = gapi.client.request({
+                'method': 'GET',
+                'path': '/youtube/analytics/v1/reports',
+                'params': {
+                    'ids': 'channel==MINE', 'start-date': '2016-05-01', 'end-date': '2017-09-25', 'metrics': 'views', 'dimensions': 'day'
+                }
+            });
+            // Execute the API request.
+            request.execute(function (response) {
+
+                getGenderViewsPercentage();
+                views = response.rows[1][1];
+
+                getLikes();
+
+                getDislikes();
+            });
+        }
+
+
+        function saveData(gender, male, views, likes, comments, dislikes) {
+
+
+            var engagement = (likes + dislikes + comments) / views;
+            console.log(engagement)
+            var model = {};
+
+            model.femaleViews = gender;
+            model.maleViews = male;
+            model.likes = likes;
+            model.Views = views;
+            model.comments = comments,
+                model.Dislike = dislikes;
+            model.engagement = engagement,
+
+                model.subcribers = "1",
+
+                $.ajax({
+                    url: "/influencer/test",
+                    method: "POST",
+                    data: {
+                        model: model,
+                    },
+                    mimeType: 'multipart/form-data',
+                    success: function (result) {
+                        //console.log(result)
+                    },
+                    error: function () {
+                        console.log("fail");
+                    }
+                });
+        }
+    </script>
+
+
+
+}

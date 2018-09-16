@@ -1,0 +1,186 @@
+﻿@model ExamProject2017.Models.InfluenterViewModels.MediaKitViewModel
+
+@{
+    ViewData["Title"] = "MediaKit";
+}
+
+<div class="container mediakit" style="min-height: 1000px;">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-5">
+                    <img class="profile-img" src="~/images/download.png" />
+                </div>
+                <div class="col-md-7">
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Name:</th>
+                                <td align="right">@Model.InflucencerProfile.Firstname @Model.InflucencerProfile.Lastname</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Work description:</th>
+                                <td align="right">@Model.InflucencerProfile.WorkDescription</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Starting price:</th>
+                                <td align="right">@Model.InflucencerProfile.PriceFrom</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Categories:</th>
+                                <td align="right">
+                                    @foreach (var v in Model.InfluenterKategori)
+                                    {
+                                        if (Model.InfluenterKategori.Last() == v)
+                                        {
+                                            <span>@v.Category.Name  </span>
+                                        }
+                                        else
+                                        {
+                                            <span>@v.Category.Name | </span>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <ul class="nav nav-tabs nav-fill" style="margin-top: 35px;">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" id="instagramData">Instagram</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">YouTube</a>
+                </li>
+            </ul>
+            <div id="instagramData" class="social-container">
+                <h4>Overview:</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="countTextNumber">@Model.InstagramFollowers</p>
+                        <p class="countText">followers</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="countTextNumber">@Model.InstagramPosts </p>
+                        <p class="countText">posts</p>
+                    </div>
+                </div>
+                <hr />
+                <h4 style="padding-top: 1rem">Engagement:</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="countTextNumber">@Model.InstagramDayReach</p>
+                        <p class="countText">reach</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="countTextNumber">@Model.InstagramDayImpression </p>
+                        <p class="countText">impressions</p>
+                    </div>
+                    <div class="col-md-12">
+                        <div id="EngagementChart" style="width:250px;height:250px;margin-right:auto;margin-left:auto;display: block; margin-top: 30px;" class="center-block"></div>
+                    </div>
+                </div>
+                <hr />
+                <h4 style="padding-top: 1rem">Followers:</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>GENDER:</h4>
+                        <div id="GenderPie" style="width:300px;height:250px;margin-right:auto;margin-left:auto;display: block"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>AGE:</h4>
+                        <div id="AgeChart" style="width: 300px; height: 250px; margin: 0 auto;display: block"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <h4>COUNTRY</h4>
+                        <table id="FølgereLand" align="center" class="text-center">
+                            <tr></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+
+        google.charts.load('current', { 'packages': ['corechart'] });
+
+        google.charts.setOnLoadCallback(function () {
+            var HasInstagramData = "True";
+            var influenterId = "@Model.ApplicationUserId";
+
+            $.ajax({
+                url: "/Influencer/InstagramData",
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                responseType: "json",
+                cache: false,
+                data: { id: influenterId },
+                success: function (InstagramDatas) {
+                    console.log(InstagramDatas)
+
+                    $('#OverblikAntalOpslag').text("opslag "+InstagramDatas.mediaCount)
+                    $('#OverblikAntalOpslagSidsteUge').text("Undefined")
+
+                    $('#OverblikAntalFølgere').text("følgere "+InstagramDatas.followerCount)
+                    $('#OverblikAntalFølgereSidsteUge').text("Undefined")
+
+                    $('#IndflydelseEngagementBarometerText').text("")
+
+                    $('#IndflydelseEngagement').text(InstagramDatas.dayImpression)
+                    $('#IndflydelseReach').text(InstagramDatas.dayReach)
+
+                    $('#IndflydelseLikes').text("Nan")
+                    $('#IndflydelseComments').text("Nan")
+
+                    $('#FølgereLand tr').remove();
+
+                    for (var x = 0; x < InstagramDatas.instagramCountry.length; x++){
+                        $('#FølgereLand > tbody:last-child').append('<tr><td style="padding:10px">'+InstagramDatas.instagramCountry[x].country.name+'</td><td style="padding:10px">'+InstagramDatas.instagramCountry[x].count + '</td></tr>');
+                    }
+
+
+                    var males = InstagramDatas.instagramAgeGroup.male13To17 + InstagramDatas.instagramAgeGroup.male18To24 + InstagramDatas.instagramAgeGroup.male25To34 + InstagramDatas.instagramAgeGroup.male35To44 + InstagramDatas.instagramAgeGroup.male45To55 + InstagramDatas.instagramAgeGroup.male55To64 + InstagramDatas.instagramAgeGroup.male65Plus;
+                    var females = InstagramDatas.instagramAgeGroup.female13To17 + InstagramDatas.instagramAgeGroup.female18To24 + InstagramDatas.instagramAgeGroup.female25To34 + InstagramDatas.instagramAgeGroup.female35To44 + InstagramDatas.instagramAgeGroup.female45To55 + InstagramDatas.instagramAgeGroup.female55To64 + InstagramDatas.instagramAgeGroup.female65Plus;
+
+                    //google.charts.setOnLoadCallback(drawMediaPie(4, 4));
+                    google.charts.setOnLoadCallback(drawGenderPie(males, females));
+
+                    google.charts.setOnLoadCallback(drawEngagementChart(InstagramDatas.dayImpression, InstagramDatas.dayReach));
+
+
+
+                    google.charts.setOnLoadCallback(drawAgeChart(
+                        InstagramDatas.instagramAgeGroup.male13To17 + InstagramDatas.instagramAgeGroup.female13To17,
+                        InstagramDatas.instagramAgeGroup.male18To24 + InstagramDatas.instagramAgeGroup.female18To24,
+                        InstagramDatas.instagramAgeGroup.male25To34 + InstagramDatas.instagramAgeGroup.female25To34,
+                        InstagramDatas.instagramAgeGroup.male35To44 + InstagramDatas.instagramAgeGroup.female35To44,
+                        InstagramDatas.instagramAgeGroup.male45To55 + InstagramDatas.instagramAgeGroup.female45To55,
+                        InstagramDatas.instagramAgeGroup.male55To64 + InstagramDatas.instagramAgeGroup.female55To64,
+                        InstagramDatas.instagramAgeGroup.male65Plus + InstagramDatas.instagramAgeGroup.female65Plus
+                    ));
+                }
+            });
+
+            //console.log(test)
+            if (HasInstagramData == "True") {
+                $("#HasData").show();
+                $("#NoData").hide();
+            } else {
+                $("#HasData").hide();
+                $("#NoData").show();
+            }
+        });
+
+    </script>
+
+}

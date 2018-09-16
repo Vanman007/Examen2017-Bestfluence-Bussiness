@@ -1,0 +1,55 @@
+@using Microsoft.AspNetCore.Identity
+@using ExamProject2017.Models
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <ul class="navbar-nav ml-auto">
+
+        <li class="nav-item active" style="margin-right: 1rem;">
+            <a class="nav-link">You are currently logged in as a @(User.IsInRole("Influencer") ? "Influencer" : "Business")</a>
+        </li>
+        @if (User.IsInRole("Influencer"))
+        {
+            <li class="nav-item" style="margin-right: 1rem;">
+                <a asp-controller="Influencer" asp-action="MediaKit" asp-route-id="@UserManager.GetUserId(User)" class="btn btn-success">Mediakit</a>
+            </li>
+        }
+        else if (User.IsInRole("Business"))
+        {
+            <li class="nav-item active" style="margin-right: 1rem;">
+                <a class="btn btn-success" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+            </li>
+        }
+
+        <li class="nav-item" style="margin-right: 1rem">
+            @if (User.IsInRole("Influencer"))
+            {
+                <a class="btn btn-info" asp-area="" asp-controller="Influencer" asp-action="Edit" title="Manage">Influencer profile</a>
+            }
+            @if (User.IsInRole("Business"))
+            {
+                <a class="btn btn-info" asp-area="" asp-controller="Business" asp-action="Edit" title="Manage">Business profile</a>
+            }
+        </li>
+
+        <li class="nav-item">
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                <button type="submit" class="btn btn-primary">Log out</button>
+            </form>
+        </li>
+    </ul>
+}
+else
+{
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+            <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Register">Sign up <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Login <span class="sr-only">(current)</span></a>
+        </li>
+    </ul>
+}

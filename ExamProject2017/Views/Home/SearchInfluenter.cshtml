@@ -1,0 +1,111 @@
+﻿@model ExamProject2017.Models.HomeViewModel.SearchInfluenterViewModel
+
+
+@{
+    ViewData["Title"] = "Søg efter influenter";
+}
+
+<p>Influenteren har maximum (0 for uendelig)</p>
+<input id="GetFollowersMax" type="number" name="FollowersMin" value="FollowersMin"> følgere 
+<br />
+<br />
+
+<p>Influenteren har minimum</p>
+<input id="GetFollowersMin" type="number" name="FollowersMin" value="FollowersMin"> følgere
+<br>
+<br />
+
+<p>Start pris maximum</p>
+<input id="GetPriceMax" type="number" name="PriceMax" value="PriceMax">  kr
+<br>
+<br>
+
+<p>Start pris minimum</p>
+<input id="GetPriceMin" type="number" name="PriceMin" value="PriceMin"> kr
+<br>
+<br>
+
+
+<div class="btn-group">
+    <button id="ChoseCity" type="button" class="form-control btn btn-default dropdown-toggle" data-toggle="dropdown">
+        Vælg By <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+        <li><a>Alle</a></li>
+        @foreach (var a in Model.City)
+            {
+            <li><button class="cityName btn-link">@a</button></li>
+        }
+    </ul>
+</div>
+<br />
+<div class="btn-group">
+    <button id="ChoseCountry" type="button" class="form-control btn btn-default dropdown-toggle" data-toggle="dropdown">
+        Vælg Land <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+        <li><a>Alle</a></li>
+        @foreach (var a in Model.Country)
+        {
+            <li><button class="contryName btn-link">@a</button></li>
+        }
+    </ul>
+</div>
+
+<button id="Search">Search</button>
+
+@section Scripts{
+    <script type="text/javascript">
+        var ContrySelected = "";
+        var CitySelected = "";
+        var Followers = 0;
+        var Age = 0;
+
+        $('.contryName').on('click', function () {
+            ContrySelected = $(this).text()
+            $("#ChoseCountry").text($(this).text())
+            console.log($(this).text())
+        })
+        $('.cityName').on('click', function () {
+            CitySelected = $(this).text();
+            $("#ChoseCity").text($(this).text())
+            console.log($(this).text())
+        })
+
+
+
+        $('#Search').click(function () {
+
+            FollowersMin = $('#GetFollowersMin').val();
+            FollowersMax = $('#GetFollowersMax').val();
+            PriceMax = $('#GetPriceMax').val();
+            PriceMin = $('#GetPriceMin').val();
+
+
+            var data = {
+                Contry: ContrySelected,
+                City: CitySelected,
+                Age: Age,
+                FollowersMin: FollowersMin,
+                FollowersMax: FollowersMax,
+                PriceMin: PriceMin,
+                PriceMax: PriceMax
+            }
+
+
+            $.ajax({
+                url: "/Home/InfluenterSearch",
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                responseType: "json",
+                cache: false,
+                data: data,
+                success: function (SearchResult) {
+                    console.log(SearchResult)
+                }
+            })
+        });
+
+
+    </script>
+}

@@ -1,0 +1,218 @@
+﻿
+@{
+    ViewData["Title"] = "Dashboardview";
+}
+
+<div class="container">
+    <div class="row" style="position: relative;">
+        <div class="col-md-12">
+            <button class="btn btn-success create-list-btn" id="newBtn">
+                New list
+            </button>
+            <h2 class="mt-3 mb-4">Business dashboard</h2>
+
+            <div class="row" id="listBody">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="influencerModal" tabindex="-1" role="dialog" aria-labelledby="influencerModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add influencers to your list</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalInfluencerBody">
+                <div class="add-influencer-object">
+                    <div class="media">
+                        <img class="mr-3" src="~/images/download.png">
+                        <div class="media-body">
+                            <h5 class="mt-0 mb-1">Media heading</h5>
+                            <p>Kategorier: <span class="category">Fashion, Beauty</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script>
+        function getHtml(id, name) {
+            return '<div class="col-md-4" id="list_' + id + '"><div class="list-container"><input id="input_' + id + '" class="form-control form-control-sm listNameInput" type="text" placeholder="List name..." value="' + name + '">' +
+                '<div class="btn-group w-100 btn-group-sm" role="group" aria-label="Basic example"><button id="add_' + id + '" type="button" class="btn btn-success w-50 addBtn">Add</button>' +
+                '<button id="delete_' + id + '" type="button" class="btn btn-danger w-50 deleteBtn">Delete</button></div><div class="listObjects" id="listObjects_' + id + '"></div></div>';
+        }
+
+        function getInfluencerHtml(value, listId) {
+            return '<div class="add-influencer-object" id="' + listId + '_' + value.id + '"><div class="media"><img class="mr-3" src="/images/download.png"><div class="media-body">' +
+                '<h5 class="mt-0 mb-1">' + value.userName.split("@@")[0] + '</h5><p>Kategorier: <span class="category">Fashion, Beauty</span></p></div></div></div>';
+        }
+
+        function loadLists() {
+            $.ajax({
+                url: '/Dashboard/GetLists',
+                type: 'GET',
+                success: function (msg) {
+                    $.each(msg, function (index, value) {
+                        $("#listBody").prepend(getHtml(value.id, value.name));
+                        loadListObjects(value.id);
+                    });
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        function loadListObjects(id) {
+            function html(name, price, number, email, id) {
+                return '<div class="influencer-profile"><div class="media">' +
+                    '<img class="mr-2" src="/images/download.png" alt="Generic placeholder image">' +
+                    '<div class="media-body"><h5 class="mt-0">' + name + '</h5>' +
+                    '<p>Kategorier: <span class="category">Fashion, Beauty</span></p>' +
+                    '<p>Mindste pris: <span class="category">' + price + '</span></p>' +
+                    '<p> Kontakt: <span class="category">' + number + '</span></p > ' +
+                    '<p>Mail: <span class="category">' + email + '</span></p>' +
+                    '<a href="/Influencer/MediaKit/' + id + '">Se mediakit</a></div></div></div> ';
+            }
+
+            $.ajax({
+                url: '/Dashboard/GetListObjects',
+                type: 'GET',
+                data: {
+                    listId: id
+                },
+                success: function (msg) {
+                    console.log(msg);
+                    $.each(msg, function (index, value) {
+                        $("#listObjects_" + id).prepend(html(
+                            value.applicationUser.influencerProfile.firstname,
+                            value.applicationUser.influencerProfile.priceFrom,
+                            value.applicationUser.phoneNumber,
+                            value.applicationUser.email,
+                            value.applicationUser.id));
+                    });
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // Load all lists
+            loadLists();
+
+            // Add new list
+            $("#newBtn").click(function () {
+                $.ajax({
+                    url: '/Dashboard/CreateList',
+                    type: 'POST',
+                    success: function (msg) {
+                        $("#listBody").prepend(getHtml(msg, ""));
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                });
+            });
+
+            // Delete Lists
+            $(document.body).on("click", ".deleteBtn", function () {
+                var idFull = $(this).attr("id");
+                var id = idFull.split("_")[1];
+
+                $.ajax({
+                    url: '/Dashboard/DeleteList',
+                    type: 'POST',
+                    data: {
+                        id: id
+                    },
+                    success: function (msg) {
+                        $("#list_" + msg).remove();
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                });
+            });
+
+            // Get all influencers and open modal
+            $(document.body).on("click", ".addBtn", function () {
+                var idFull = $(this).attr("id");
+                var id = idFull.split("_")[1];
+                $.ajax({
+                    url: '/Dashboard/GetAllInfluencers',
+                    type: 'GET',
+                    success: function (msg) {
+                        $.each(msg, function (index, value) {
+                            $("#modalInfluencerBody").prepend(getInfluencerHtml(value, id));
+                        });
+
+                        $("#influencerModal").modal("show");
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                });
+            });
+
+            // Name list
+            $(document.body).on("keyup", ".listNameInput", function () {
+                var idFull = $(this).attr("id");
+                var id = idFull.split("_")[1];
+                var name = $(this).val();
+                $.ajax({    
+                    url: '/Dashboard/NameList',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        name: name
+                    },
+                    success: function (msg) {
+                        console.log("YES!")
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                });
+            });
+
+            // Add to list
+            $(document.body).on("click", ".add-influencer-object", function () {
+                var idFull = $(this).attr("id");
+                var listId = idFull.split("_")[0];
+                var userId = idFull.split("_")[1];
+                $.ajax({
+                    url: '/Dashboard/AddToList',
+                    type: 'POST',
+                    data: {
+                        listId: listId,
+                        userId: userId
+                    },
+                    success: function (msg) {
+                        $("#listObjects_" + listId).html("");
+                        loadListObjects(listId);
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+
+
